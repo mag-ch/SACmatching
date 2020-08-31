@@ -11,6 +11,7 @@ from shapely.geometry import MultiPoint
 # Significant parts of this code are taken from this blog post https://github.com/gboeing/2014-summer-travels/blob/master/clustering-scikitlearn.ipynb
 users = pd.read_csv("responses_clean_locations.csv")
 # users_who_want_loc = user_data[user_data["Do you have a preference on location of the person you are matched with? "] != "No"]
+users = users.drop_duplicates("Email address")
 
 clusters = {}
 pd.options.mode.chained_assignment = None
@@ -27,7 +28,7 @@ with open('locationData.json') as json_file:
     users["lon"] = lon
     coords = users[['lat', 'lon']].to_numpy()
     kms_per_radian = 6371.0088
-    epsilon = 100 / kms_per_radian
+    epsilon = 50 / kms_per_radian
     db = DBSCAN(eps=epsilon, min_samples=1, algorithm='ball_tree',
                 metric='haversine').fit(np.radians(coords))
     cluster_labels = db.labels_
@@ -74,6 +75,7 @@ with open('locationData.json') as json_file:
         unique_coords = np.unique(cluster, axis=0)
         users_by_coords = list(map(get_users_with_coords, unique_coords))
         group_id = n if len(cluster) > 1 else -1
+        print(len(cluster))
         return [
             list(item) + [group_id] for sublist in users_by_coords for item in sublist.values]
 
