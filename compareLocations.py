@@ -12,7 +12,7 @@ from shapely.geometry import MultiPoint
 def get_clusters():
     users = pd.read_csv("responses_clean_locations.csv")
     # users_who_want_loc = user_data[user_data["Do you have a preference on location of the person you are matched with? "] != "No"]
-
+    users = users.drop_duplicates("Email address")
     clusters = {}
     pd.options.mode.chained_assignment = None
 
@@ -28,7 +28,7 @@ def get_clusters():
         users["lon"] = lon
         coords = users[['lat', 'lon']].to_numpy()
         kms_per_radian = 6371.0088
-        epsilon = 100 / kms_per_radian
+        epsilon = 50 / kms_per_radian
         db = DBSCAN(eps=epsilon, min_samples=1, algorithm='ball_tree',
                     metric='haversine').fit(np.radians(coords))
         cluster_labels = db.labels_
